@@ -1,0 +1,30 @@
+name: Build metrics image
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          docker build -t ghcr.io/$OWNER/metrics-fork:latest .
+          docker push ghcr.io/$OWNER/metrics-fork:latest
